@@ -14,7 +14,7 @@ from tensorflow import keras
 import time 
 import os 
 
-" This is a change, this is a change"
+print(" This is a change, this is a change")
 
 class Predict_Process_Control():
 
