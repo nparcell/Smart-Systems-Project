@@ -9,10 +9,12 @@ import seaborn as sns
 
 import tensorflow as tf 
 from tensorflow import keras 
-from tensorflow.keras import layers 
+# from tensorflow.keras import layers 
 
 import time 
 import os 
+
+" This is a change "
 
 class Predict_Process_Control():
 
@@ -38,14 +40,14 @@ class Predict_Process_Control():
 		self.normed_train_data = norm(train_dataset) 
 		self.normed_test_data  = norm(test_dataset )
 
-		self.model = keras.Sequential([
-			layers.Dense(25, activation = tf.nn.sigmoid, input_shape = [len(train_dataset.keys())]),
-			layers.Dropout(1/4),
-			layers.Dense(25, activation = tf.nn.sigmoid),
-			layers.Dropout(1/4),
-			layers.Dense(25, activation = tf.nn.sigmoid),
+		self.model = tf.keras.Sequential([
+			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid, input_shape = [len(train_dataset.keys())]),
+			tf.keras.layers.Dropout(1/4),
+			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid),
+			tf.keras.layers.Dropout(1/4),
+			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid),
 			# layers.Dropout(1/4),
-			layers.Dense(1)
+			tf.keras.layers.Dense(1)
 		])
 
 	def Build_Predictable_Model(self):
