@@ -14,8 +14,6 @@ from tensorflow import keras
 import time 
 import os 
 
-print(" This is a change, this is a change")
-
 class Predict_Process_Control():
 
 	def __init__(self, dataset):
@@ -26,22 +24,24 @@ class Predict_Process_Control():
 		
 		self.data = pd.read_csv(dataset, names = col_names)
 
-		train_dataset = self.data.sample(frac = 0.90, random_state = 0)
-		test_dataset = self.data.drop(train_dataset.index)
+		self.train_dataset = self.data.sample(frac = 0.90, random_state = 0)
+		test_dataset = self.data.drop(self.train_dataset.index)
 
-		self.train_stats = train_dataset.describe() 
+		self.train_stats = self.train_dataset.describe() 
 		self.train_stats.pop(self.var_testing)
 		self.train_stats = self.train_stats.transpose() 
 
-		self.train_labels, self.test_labels = train_dataset.pop(self.var_testing), test_dataset.pop(self.var_testing)
+		self.train_labels, self.test_labels = self.train_dataset.pop(self.var_testing), test_dataset.pop(self.var_testing)
 
 		def norm(x):
-			return ( x - self.train_stats["mean"] / self.train_stats["std"])
-		self.normed_train_data = norm(train_dataset) 
+			return ( x - self.train_stats["mean"]) / self.train_stats["std"]
+		self.normed_train_data = norm(self.train_dataset) 
 		self.normed_test_data  = norm(test_dataset )
 
+	def Build_Predictable_Model(self):
+
 		self.model = tf.keras.Sequential([
-			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid, input_shape = [len(train_dataset.keys())]),
+			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid, input_shape = [len(self.train_dataset.keys())]),
 			tf.keras.layers.Dropout(1/4),
 			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid),
 			tf.keras.layers.Dropout(1/4),
@@ -49,8 +49,6 @@ class Predict_Process_Control():
 			# layers.Dropout(1/4),
 			tf.keras.layers.Dense(1)
 		])
-
-	def Build_Predictable_Model(self):
 
 		optimizer = tf.keras.optimizers.RMSprop(0.001)
 		self.model.compile(loss = "mean_squared_error",
@@ -89,9 +87,10 @@ class Predict_Process_Control():
 		
 		self.test_predictions = self.model.predict(self.normed_test_data).flatten() 
 
+
 	def Show_Predictions(self):
 
-		plt.scatter(self.test_labels, self.test_predictions)
+		plt.scatter(self.test_predictions, self.test_labels)
 		plt.xlabel("True values" + self.var_testing)
 		plt.ylabel("Predictions" + self.var_testing)
 		plt.axis("equal")
@@ -113,8 +112,11 @@ class Predict_Process_Control():
 def main():
 	a = Predict_Process_Control(
 		# "project1.csv"
-		"test1.csv"
+		# "test1.csv"
 		# "train1.csv"
+		# "train2.csv"
+		# "ramp1.csv"
+		"ramp2.csv"
 		)
 	a.Build_Predictable_Model()
 	a.Evaluate_Data()
