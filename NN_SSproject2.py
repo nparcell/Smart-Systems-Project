@@ -16,17 +16,19 @@ import os
 
 class Predict_Process_Control():
 
-	def __init__(self, dataset):
+	def __init__(self, traindata, testdata):
 
 		self.var_testing = "QA"
 		col_names = ["QA", "QB", "QC", "Qout", "V", "h"]
 		self.EPOCHS = 1000
 		
-		self.data = pd.read_csv(dataset, names = col_names)
-
-		self.train_dataset = self.data.sample(frac = 0.50, random_state = 1)
-		test_dataset = self.data.drop(self.train_dataset.index)
+		# self.data = pd.read_csv(dataset, names = col_names)
+		# self.train_dataset = self.data.sample(frac = 0.50, random_state = 1)
+		# test_dataset = self.data.drop(self.train_dataset.index)
 		# test_dataset = self.data.sample(frac = 1, random_state = 1)
+
+		self.train_dataset = pd.read_csv(traindata, names = col_names) 
+		test_dataset  = pd.read_csv(testdata,  names = col_names)
 
 		self.train_stats = self.train_dataset.describe() 
 		self.train_stats.pop(self.var_testing)
@@ -37,7 +39,7 @@ class Predict_Process_Control():
 		def norm(x):
 			return ( x - self.train_stats["mean"]) / self.train_stats["std"]
 		self.normed_train_data = norm(self.train_dataset) 
-		self.normed_test_data  = norm(test_dataset )
+		self.normed_test_data  = norm(test_dataset)
 
 	def Build_Predictable_Model(self):
 
@@ -64,7 +66,7 @@ class Predict_Process_Control():
 		class PrintDot(keras.callbacks.Callback):
 			def on_epoch_end(self, epoch, logs):
 				# os.system("clear")
-				if epoch % 100 == 0:
+				if epoch % 10 == 0:
 					b = "Epoch: " + "."*10 + str(epoch)
 					print(b,
 						# end = "\r"
@@ -80,7 +82,7 @@ class Predict_Process_Control():
 								 validation_split = 0.2,
 								 verbose = 0,
 								 callbacks = [
-								 			#   early_stop,
+								 			  early_stop,
 											  PrintDot()
 											  ]
 								)
@@ -121,7 +123,7 @@ class Predict_Process_Control():
 		new_test_predictions = [] 
 		for j in range(len(self.test_predictions)):
 			new_test_predictions.append(self.test_predictions[j])
-			new_test_predictions.append(self.test_predictions[j])
+			# new_test_predictions.append(self.test_predictions[j])
 		# plt.plot(self.test_predictions)
 		plt.plot(new_test_predictions)
 		# new_test_label = np.zeros((len(self.test_labels)))
@@ -140,15 +142,16 @@ class Predict_Process_Control():
 
 
 def main():
-	a = Predict_Process_Control(
-		# "project1.csv"
-		# "test1.csv"
-		# "train1.csv"
-		"train2.csv"
-		# "ramp1.csv"
-		# "ramp2.csv"
+	# a = Predict_Process_Control(
+	# 	# "project1.csv"
+	# 	# "test1.csv"
+	# 	# "train1.csv"
+	# 	# "train2.csv"
+	# 	# "ramp1.csv"
+	# 	"ramp2.csv"
 
-		)
+	# 	)
+	a = Predict_Process_Control("ramp2.csv", "train2.csv")
 	a.Build_Predictable_Model()
 	a.Evaluate_Data()
 	# a.Show_Predictions()
