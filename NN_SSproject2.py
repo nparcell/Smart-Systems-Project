@@ -24,8 +24,9 @@ class Predict_Process_Control():
 		
 		self.data = pd.read_csv(dataset, names = col_names)
 
-		self.train_dataset = self.data.sample(frac = 0.90, random_state = 0)
+		self.train_dataset = self.data.sample(frac = 0.50, random_state = 1)
 		test_dataset = self.data.drop(self.train_dataset.index)
+		# test_dataset = self.data.sample(frac = 1, random_state = 1)
 
 		self.train_stats = self.train_dataset.describe() 
 		self.train_stats.pop(self.var_testing)
@@ -42,16 +43,17 @@ class Predict_Process_Control():
 
 		self.model = tf.keras.Sequential([
 			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid, input_shape = [len(self.train_dataset.keys())]),
-			tf.keras.layers.Dropout(1/4),
+			tf.keras.layers.Dropout(1/2),
 			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid),
-			tf.keras.layers.Dropout(1/4),
+			tf.keras.layers.Dropout(1/2),
 			tf.keras.layers.Dense(25, activation = tf.nn.sigmoid),
-			# layers.Dropout(1/4),
+			tf.keras.layers.Dropout(1/2),
 			tf.keras.layers.Dense(1)
 		])
 
 		optimizer = tf.keras.optimizers.RMSprop(0.001)
-		self.model.compile(loss = "mean_squared_error",
+		self.model.compile(
+						   loss = "mean_squared_error",
 						   optimizer = optimizer,
 						   metrics = ["mean_absolute_error", "mean_squared_error"]
 						)
@@ -61,13 +63,15 @@ class Predict_Process_Control():
 
 		class PrintDot(keras.callbacks.Callback):
 			def on_epoch_end(self, epoch, logs):
-				os.system("clear")
-				b = "Epoch: " + str(epoch)
-				print(b,
-					end = "\r"
-				)
+				# os.system("clear")
+				if epoch % 100 == 0:
+					b = "Epoch: " + "."*10 + str(epoch)
+					print(b,
+						# end = "\r"
+					)
 
-		early_stop = keras.callbacks.EarlyStopping(monitor = "val_loss",
+		early_stop = keras.callbacks.EarlyStopping(
+												   monitor = "val_loss",
 												   patience = 10
 												   )
 
@@ -75,7 +79,10 @@ class Predict_Process_Control():
 								 epochs = self.EPOCHS,
 								 validation_split = 0.2,
 								 verbose = 0,
-								 callbacks = [early_stop, PrintDot()]
+								 callbacks = [
+								 			#   early_stop,
+											  PrintDot()
+											  ]
 								)
 
 		self.loss, self.mae, self.mse = self.model.evaluate(self.normed_test_data,
@@ -91,13 +98,14 @@ class Predict_Process_Control():
 	def Show_Predictions(self):
 
 		plt.scatter(self.test_predictions, self.test_labels)
-		plt.xlabel("True values" + self.var_testing)
-		plt.ylabel("Predictions" + self.var_testing)
+		plt.xlabel("True values " + self.var_testing)
+		plt.ylabel("Predictions " + self.var_testing)
 		plt.axis("equal")
 		plt.axis("square")
 		plt.xlim([0, plt.xlim()[1]])
 		plt.ylim([0, plt.ylim()[1]])
-		_ = plt.plot([-10, 10], [-10, 10])
+		graph_size = 25
+		_ = plt.plot([-graph_size, graph_size], [-graph_size, graph_size])
 		plt.show() 
 
 	def Show_Error(self):
@@ -108,20 +116,44 @@ class Predict_Process_Control():
 		_ = plt.ylabel("Count")
 		plt.show() 
 
+	def Compare(self):
+
+		new_test_predictions = [] 
+		for j in range(len(self.test_predictions)):
+			new_test_predictions.append(self.test_predictions[j])
+			new_test_predictions.append(self.test_predictions[j])
+		# plt.plot(self.test_predictions)
+		plt.plot(new_test_predictions)
+		# new_test_label = np.zeros((len(self.test_labels)))
+		# print(np.shape(self.test_labels))
+		# print(self.test_labels)
+		# for j in range(len(self.test_labels)):
+		# 	if j % 2 == 0:
+		# 		new_test_label[j] = self.test_labels[j]
+		plt.plot(self.test_labels)
+		plt.legend(["Neural Net Predictions", "Simulation Labels"])
+		# plt.plot(new_test_label)
+		plt.ylabel(self.var_testing)
+		plt.xlabel("Timestamp")
+		plt.title("Compare Neural Net to Process Control Data")
+		plt.show()
+
 
 def main():
 	a = Predict_Process_Control(
 		# "project1.csv"
 		# "test1.csv"
 		# "train1.csv"
-		# "train2.csv"
+		"train2.csv"
 		# "ramp1.csv"
-		"ramp2.csv"
+		# "ramp2.csv"
+
 		)
 	a.Build_Predictable_Model()
 	a.Evaluate_Data()
-	a.Show_Predictions()
+	# a.Show_Predictions()
 	# a.Show_Error()
+	a.Compare()
 
 if __name__ == "__main__":
 	main()
