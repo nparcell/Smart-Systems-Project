@@ -154,7 +154,7 @@ def main():
 	a = Predict_Process_Control("ramp2.csv", "train2.csv")
 	a.Build_Predictable_Model()
 	a.Evaluate_Data()
-	# a.Show_Predictions()
+	a.Show_Predictions()
 	# a.Show_Error()
 	a.Compare()
 
